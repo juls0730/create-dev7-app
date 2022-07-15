@@ -1,6 +1,6 @@
 {
   "name": "create-dev7-app",
-  "version": "1.0.1-hotfix",
+  "version": "1.0.4",
   "type": "module",
   "repository": {
     "type": "git",
@@ -29,7 +29,6 @@
   "author": "Julian G <juls07@juls07.dev>",
   "license": "MIT",
   "dependencies": {
-    "commander": "^9.3.0",
     "gradient-string": "^2.0.1",
     "inquirer": "^9.0.1"
   }
