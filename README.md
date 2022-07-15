@@ -9,7 +9,8 @@ Get started with the dev7 Stack by running `npx create-dev7-app`
 - <a href="#contributors">Contributors & copyright notices</a>
 
 <h2 id="about">What is the Dev7 Stack?</h2>
-The _"Dev7 Stack"_ is a web development stack made by Juls07 focused on simplicity and modularity. It's main componenets are:
+The <i>"Dev7 Stack"</i> is a web development stack made by Juls07 focused on simplicity and modularity. It's main componenets are:
+
 - <a href="https://v3.nuxtjs.org/" target="_blank">Nxut.js V3</a>
 - <a href="https://trpc.io/" target="_blank">tRPC</a>
 - <a href="https://tailwindcss.com/" target="_blank">Tailwind CSS</a>
