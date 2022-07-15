@@ -1,0 +1,36 @@
+{
+  "name": "create-dev7-app",
+  "version": "1.0.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juls0730/create-dev7-app.git"
+  },
+  "description": "Create web application with the dev7 stack.",
+  "main": "index.js",
+  "exports": "./index.js",
+  "bin": {
+    "create-dev7-app": "./index.js"
+  },
+  "engines": {
+    "node": ">=14.16"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "create-dev7-app",
+    "nuxtjs",
+    "dev7-stack",
+    "tRPC",
+    "tailwind",
+    "typescript"
+  ],
+  "author": "Julian G <juls07@juls07.dev>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^9.3.0",
+    "gradient-string": "^2.0.1",
+    "inquirer": "^9.0.1"
+  }
+}
