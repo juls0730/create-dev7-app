@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "jsx": "preserve",
     "target": "es5",
     "lib": ["ESNext", "ESNext.AsyncIterable", "DOM"],
     "allowJs": true,
