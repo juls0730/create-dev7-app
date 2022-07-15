@@ -1,7 +1,7 @@
 # Create dev7 App
 
 Interactive CLI to set up a slightly opinionated, full-stack, typesafe Nuxt.js V3 projects.
-Get started with the dev7 Stack by running `npx create-dev7-app`
+Get started with the dev7 Stack by running `pnpm dlx create-dev7-app@latest`
 
 ## Table of Contents
 - <a href="#about">What is the Dev7 Stack?</a>
@@ -19,24 +19,15 @@ The <i>"Dev7 Stack"</i> is a web development stack made by Juls07 focused on sim
 - <a href="https://auth.nuxtjs.org/" target="_blank">Nuxt.js Auth</a>
 
 <h2 id="getting-started">Getting Started</h2>
-To get started with the dev7 Stack run any of these following commands and answer the promts:
-
-### npm
-```bash
-npx create-dev7-app@latest
-```
-
-### yarn
-
-```bash
-yarn create dev7-app@latest
-```
+To get started with the dev7 Stack run this command answer the promts:
 
 ### pnpm
 
 ```bash
 pnpm dlx create-dev7-app@latest
 ```
+
+(npm and yarn version are not working at least for me on Arch linux with the 5.15 lts kernel)
 
 <h2 id="contributors">Contributors & copyright notices</h2>
 We love contributors! feel free to contribute to this project.
