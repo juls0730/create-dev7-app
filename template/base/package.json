@@ -6,6 +6,9 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview"
   },
+  "dependencies": {
+    
+  },
   "devDependencies": {
     "nuxt": "3.0.0-rc.5"
   }

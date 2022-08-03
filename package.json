@@ -1,22 +1,26 @@
 {
   "name": "create-dev7-app",
-  "version": "1.0.4-hotfix",
+  "version": "1.0.6",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/juls0730/create-dev7-app.git"
   },
   "description": "Create web application with the dev7 stack.",
-  "main": "index.js",
-  "exports": "./index.js",
+  "main": "dist/index.js",
+  "exports": "./dist/index.js",
   "bin": {
-    "create-dev7-app": "./index.js"
+    "create-dev7-app": "./dist/index.js"
   },
   "engines": {
     "node": ">=14.16"
   },
   "scripts": {
-    "start": "node index.js"
+    "dev": "npm run build && npm run start",
+    "start": "node dist/index.js",
+    "build": "tsup src/index.ts --format esm --clean --sourcemap --minify --metafile",
+    "pub:beta": "npm run build && npm publish --tag beta",
+    "pub:release": "npm run build && npm publish"
   },
   "keywords": [
     "create-dev7-app",
@@ -29,7 +33,13 @@
   "author": "Julian G <juls07@juls07.dev>",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^5.0.1",
+    "child_process": "^1.0.2",
+    "fs-extra": "^10.1.0",
     "gradient-string": "^2.0.1",
     "inquirer": "^9.0.1"
+  },
+  "devDependencies": {
+    "tsup": "^6.2.1"
   }
 }
