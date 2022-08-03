@@ -1,7 +1,7 @@
 # Create dev7 App
 
 Interactive CLI to set up a slightly opinionated, full-stack, typesafe Nuxt.js V3 projects.
-Get started with the dev7 Stack by running `pnpm dlx create-dev7-app@latest`
+Get started with the dev7 Stack by running `npx create-dev7-app@latest`
 
 ## Table of Contents
 - <a href="#about">What is the Dev7 Stack?</a>
@@ -20,6 +20,12 @@ The <i>"Dev7 Stack"</i> is a web development stack made by Juls07 focused on sim
 
 <h2 id="getting-started">Getting Started</h2>
 To get started with the dev7 Stack run this command answer the promts:
+
+### npm
+
+```bash
+npx create-dev7-app@latest
+```
 
 ### pnpm
 
