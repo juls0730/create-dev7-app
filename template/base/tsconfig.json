@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2020",
     "lib": ["ESNext", "ESNext.AsyncIterable", "DOM"],
     "allowJs": true,
     "sourceMap": true,
@@ -14,6 +14,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
+    "jsx": "preserve",
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
@@ -33,5 +34,6 @@
     "node_modules",
     ".nuxt",
     "dist"
-  ]
+  ],
+  "extends": "./.nuxt/tsconfig.json"
 }
