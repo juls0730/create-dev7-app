@@ -1,6 +1,6 @@
 {
   "name": "create-dev7-app",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "repository": {
     "type": "git",
@@ -40,6 +40,10 @@
     "inquirer": "^9.0.1"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/gradient-string": "^1.1.2",
+    "@types/inquirer": "^9.0.2",
+    "@types/node": "^18.11.8",
     "tsup": "^6.2.1"
   }
 }

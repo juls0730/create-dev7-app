@@ -69,37 +69,44 @@ const main = async () => {
             fs.copy(basedir, answers.appName),
         ])
 
-        let modules: any = '';
+        let nuxtModules: any = '';
         let devPackages: any = '';
         let packages: any = '';
         let indexFile: string = '.vue';
+        let buildOptions: string = '';
         if (answers.modules.includes('tailwind')) {
             // tailwind was selected
-            modules += '@nuxtjs/tailwindcss '
-            devPackages += '@nuxtjs/tailwindcss '
+            devPackages += 'tailwindcss postcss@latest autoprefixer@latest '
+            buildOptions += `postcss: {
+                    postcssOptions: require('./postcss.config.js'),
+                  },
+              `
             indexFile = '-tw' + indexFile
 
             const tailwindcsssource = path.join(PKG_ROOT, 'template/addons/tailwind/main.css')
             const tailwindcssdest = path.join(answers.appName, 'assets/css/main.css')
             const tailwindconfigsource = path.join(PKG_ROOT, 'template/addons/tailwind/tailwind.config.js')
             const tailwindconfigdest = path.join(answers.appName, 'tailwind.config.js')
+            const postcssconfigsource = path.join(PKG_ROOT, 'template/addons/tailwind/postcss.config.js')
+            const postcssconfigdest = path.join(answers.appName, 'postcss.config.js')
             const technologyqsource = path.join(PKG_ROOT, 'template/page-stubs/components/Technology.vue')
             const technologyqdest = path.join(answers.appName, 'components/Technology.vue')
 
             await Promise.all([
                 fs.copy(tailwindcsssource, tailwindcssdest),
                 fs.copy(tailwindconfigsource, tailwindconfigdest),
+                fs.copy(postcssconfigsource, postcssconfigdest),
                 fs.copy(technologyqsource, technologyqdest)
             ])
         }
 
         if (answers.modules.includes('trpc')) {
-            modules += 'trpc-nuxt '
+            nuxtModules += 'trpc-nuxt '
             packages += 'trpc-nuxt zod '
             indexFile = '-trpc' + indexFile
 
-            const trpcserversource = path.join(PKG_ROOT, 'template/addons/trpc/server')
-            const trpcserversdest = path.join(PKG_ROOT, `${answers.appName}/server`)
+            const trpcserversource = path.join(PKG_ROOT, 'template/addons/trpc/server/trpc/index.ts')
+            const trpcserversdest = path.join(answers.appName, `server/trpc/index.ts`)
 
             await Promise.all([
                 fs.copy(trpcserversource, trpcserversdest),
@@ -108,7 +115,7 @@ const main = async () => {
 
         if (answers.modules.includes('nuxtAuth')) {
             packages += '@nuxtjs/auth-next @nuxtjs/axios '
-            modules += '@nuxtjs/axios @nuxtjs/auth-next '
+            nuxtModules += '@nuxtjs/axios @nuxtjs/auth-next '
             indexFile = '-auth' + indexFile
         }
 
@@ -130,63 +137,74 @@ const main = async () => {
             fs.copy(indexsource, indexdest)
         ])
 
-        modules = modules.trimEnd()
-        modules = modules.split(' ')
+        nuxtModules = nuxtModules.trimEnd()
+        nuxtModules = nuxtModules.split(' ')
         packages = packages.trimEnd().split(' ')
         devPackages = devPackages.trimEnd().split(' ')
 
         let data;
         let newValue;
-        if (modules.includes('@nuxtjs/tailwindcss')) {
-            data = fs.readFileSync(`${answers.appName}/nuxt.config.ts`, 'utf-8');
-            newValue = data.replace('// tailwind cssPath stub', `tailwindcss: {\n       cssPath: '~/assets/css/main.css',\n     },`)
-            fs.writeFileSync(`${answers.appName}/nuxt.config.ts`, newValue, 'utf-8')
-        }
 
-        if (modules.includes('trpc-nuxt')) {
+        if (nuxtModules.includes('trpc-nuxt')) {
             data = fs.readFileSync(`${answers.appName}/nuxt.config.ts`, 'utf-8');
             newValue = data.replace('// trpc stub', `trpc: {\n        baseURL: 'http://localhost:3000', // defaults to http://localhost:3000\n        endpoint: '/trpc', // defaults to /trpc\n    },`)
             await fs.writeFileSync(`${answers.appName}/nuxt.config.ts`, newValue, 'utf-8')
         }
 
         let nuxtmods = "";
-        modules.forEach(module => { nuxtmods += ("      '" + module + "',\n") })
+        for (let i = 0; i < nuxtModules.length; i++) {
+            const moduleName = nuxtModules[i]
+            nuxtmods += ("      '" + moduleName + "',\n")
+        }
         data = fs.readFileSync(`${answers.appName}/nuxt.config.ts`, 'utf-8');
-        newValue = data.replace('// module stub', `modules: [\n${nuxtmods}    ],`)
-        await fs.writeFileSync(`${answers.appName}/nuxt.config.ts`, newValue, 'utf-8')
+        newValue = await data.replace('// module stub', `modules: [\n${nuxtmods}    ],`)
         const jsonlocation = path.join(answers.appName, 'package.json')
 
-        packages.forEach(async (module) => {
-            const pkgJson = await fs.readJson(jsonlocation)
-            const pkgName = module.replace(/^(@?[^@]+)(?:@.+)?$/, "$1");
-            const { stdout: latestVersion } = await execa(`npm show ${module} version`);
-            if (!latestVersion) {
-                console.warn("WARN: Failed to resolve latest version of package:", module);
-            }
-            pkgJson.dependencies![pkgName] = `^${latestVersion}`;
+        if (buildOptions) {
+            newValue = newValue.replace('// build stub', `build: {
+                ${buildOptions}
+            },`)
+        }
 
-            await fs.writeJSON(path.join(answers.appName, "package.json"), pkgJson, {
+        console.log(chalk.bold('configuring project, please wait...\n'))
+
+        fs.writeFileSync(`${answers.appName}/nuxt.config.ts`, newValue, 'utf-8')
+
+        for (let i = 0; i < packages.length; i++) {
+            const packageName = packages[i].replace(/^(@?[^@]+)(?:@.+)?$/, "$1")
+            if (!packageName) return;
+            const pkgJson = await fs.readJSONSync(jsonlocation)
+            const pkgName = packageName;
+            const { stdout: latestVersion } = await execa(`npm show ${packageName} version`);
+            if (!latestVersion) {
+                console.warn("WARN: Failed to resolve latest version of package:", packageName);
+            }
+            pkgJson.dependencies[pkgName] = `^${latestVersion.split('\n')[0]}`;
+
+            fs.writeJSONSync(path.join(answers.appName, "package.json"), pkgJson, {
                 spaces: 2,
             });
-        })
+        }
 
-        devPackages.forEach(async (module) => {
-            const pkgJson = await fs.readJson(jsonlocation)
-            const pkgName = module.replace(/^(@?[^@]+)(?:@.+)?$/, "$1");
+        for (let i = 0; i < devPackages.length; i++) {
+            const devPackageName = devPackages[i].replace(/^(@?[^@]+)(?:@.+)?$/, "$1")
+            if (!devPackageName) return;
+            const pkgJson = fs.readJSONSync(path.join(answers.appName, "package.json"))
+            const pkgName = devPackageName.replace("'", "");
 
-            const { stdout: latestVersion } = await execa(`npm show ${module} version`);
+            const { stdout: latestVersion } = await execa(`npm show ${devPackageName} version`);
             if (!latestVersion) {
-                console.warn("WARN: Failed to resolve latest version of package:", module);
+                console.warn("WARN: Failed to resolve latest version of package:", devPackageName);
             }
-            pkgJson.devDependencies![pkgName] = `^${latestVersion}`;
+            pkgJson.devDependencies[pkgName] = `^${latestVersion.split('\n')[0]}`;
 
-            await fs.writeJSON(path.join(answers.appName, "package.json"), pkgJson, {
+            fs.writeJSONSync(path.join(answers.appName, "package.json"), pkgJson, {
                 spaces: 2,
             });
-        })
+        }
 
         console.log(chalk.bold(`Instalation complete!\nNext Steps:\n`), chalk.italic.bold(` cd ${answers.appName}\n  npm install\n  npm run dev`))
-    });
+    })
 }
 
 main()
