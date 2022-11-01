@@ -3,6 +3,8 @@
 Interactive CLI to set up a slightly opinionated, full-stack, typesafe Nuxt.js V3 projects.
 Get started with the dev7 Stack by running `npx create-dev7-app@latest`
 
+Get Started: [https://codesandbox.io/p/sandbox/lucid-buck-3x3n3x](https://codesandbox.io/p/sandbox/lucid-buck-3x3n3x)
+
 ## Table of Contents
 - <a href="#about">What is the Dev7 Stack?</a>
 - <a href="#getting-started">Getting Started</a>
