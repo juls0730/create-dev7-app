@@ -160,7 +160,6 @@ const data = await $client.hello.query();`
         if (answers.modules.includes('prisma')) {
             packages += '@prisma/client '
             devPackages += 'prisma '
-            fs.mkdirSync(`${answers.appName}/prisma`)
             const prismasource = path.join(PKG_ROOT, 'template/addons/prisma/')
             const prismasdest = path.join(PKG_ROOT, `${answers.appName}/prisma`)
 
