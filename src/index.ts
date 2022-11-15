@@ -161,7 +161,7 @@ const data = await $client.hello.query();`
             packages += '@prisma/client '
             devPackages += 'prisma '
             const prismasource = path.join(PKG_ROOT, 'template/addons/prisma/')
-            const prismasdest = path.join(PKG_ROOT, `${answers.appName}/prisma`)
+            const prismasdest = path.join(answers.appName, `${answers.appName}/prisma`)
 
             await Promise.all([
                 fs.copy(prismasource, prismasdest),
