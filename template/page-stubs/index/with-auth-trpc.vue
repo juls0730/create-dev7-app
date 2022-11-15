@@ -32,12 +32,5 @@
 </template>
 
 <script setup lang="ts">
-const client = useClient();
-
-const {
-  data: data,
-  pending,
-  error,
-  refresh,
-} = await useAsyncQuery(["example.hello"]);
+// trpc injection
 </script>

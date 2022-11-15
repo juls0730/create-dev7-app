@@ -48,6 +48,20 @@ const main = async () => {
                     name: 'trpc',
                 },
             ],
+        },
+        {
+            type: 'list',
+            name: 'trpc-ver',
+            message: 'What version of Trpc do you want to use',
+            choices: [
+                {
+                    name: 'v9',
+                },
+                {
+                    name: 'v10',
+                },
+            ],
+            when: (answers: { appName: string, 'trpc-ver'?: string, modules: string[]; }) => answers.modules.includes('trpc')
         }
     ]
 
@@ -62,24 +76,27 @@ const main = async () => {
  \\_____|_|  \\___|\\__,_|\\__\\___|  \\__,_|\\___| \\_//_/     /_/    \\_\\ .__/| .__/ 
                                                                  |_|   |_|    \n`))
     prompt(questions).then(async (answers) => {
-        await fs.mkdirSync(answers.appName)
+        fs.mkdirSync(answers.appName)
         const basedir = path.join(PKG_ROOT, 'template/base')
 
         await Promise.all([
             fs.copy(basedir, answers.appName),
         ])
 
-        let nuxtModules: any = '';
+        let nuxtModules: string | Array<string> | undefined = '';
         let devPackages: any = '';
         let packages: any = '';
         let indexFile: string = '.vue';
-        let buildOptions: string = '';
+        let postCssOptions: string = '';
         if (answers.modules.includes('tailwind')) {
             // tailwind was selected
             devPackages += 'tailwindcss postcss@latest autoprefixer@latest '
-            buildOptions += `postcss: {
-                    postcssOptions: require('./postcss.config.js'),
-                  },
+            postCssOptions += `postcss: {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+},
               `
             indexFile = '-tw' + indexFile
 
@@ -100,17 +117,38 @@ const main = async () => {
             ])
         }
 
+        let trpcInjection = '';
+
         if (answers.modules.includes('trpc')) {
-            nuxtModules += 'trpc-nuxt '
             packages += 'trpc-nuxt zod '
             indexFile = '-trpc' + indexFile
 
-            const trpcserversource = path.join(PKG_ROOT, 'template/addons/trpc/server/trpc/index.ts')
-            const trpcserversdest = path.join(answers.appName, `server/trpc/index.ts`)
-
-            await Promise.all([
-                fs.copy(trpcserversource, trpcserversdest),
-            ])
+            if (answers['trpc-ver'] === 'v9') {
+                trpcInjection = `const client = useClient();
+const {
+  data: data,
+  pending,
+  error,
+  refresh,
+} = await useAsyncQuery(["hello"]);`
+                nuxtModules += 'trpc-nuxt '
+                const trpcServerSource = path.join(PKG_ROOT, 'template/addons/trpc/v9/server/trpc/index.ts')
+                const trpcServerDest = path.join(answers.appName, `server/trpc/index.ts`)
+                await Promise.all([
+                    fs.copy(trpcServerSource, trpcServerDest),
+                ])
+            } else {
+                trpcInjection = `const { $client } = useNuxtApp();
+const data = await $client.hello.query();`
+                const trpcServerSource = path.join(PKG_ROOT, 'template/addons/trpc/v10/server/')
+                const trpcServerDest = path.join(answers.appName, `server/`)
+                const trpcPluginSource = path.join(PKG_ROOT, 'template/addons/trpc/v10/plugins/')
+                const trpcPluginDest = path.join(answers.appName, 'plugins/')
+                await Promise.all([
+                    fs.copy(trpcServerSource, trpcServerDest),
+                    fs.copy(trpcPluginSource, trpcPluginDest),
+                ])
+            }
         }
 
         if (answers.modules.includes('nuxtAuth')) {
@@ -130,40 +168,53 @@ const main = async () => {
                 fs.copy(prismasource, prismasdest),
             ])
         }
-        const indexsource = path.join(`${PKG_ROOT}`, `template/page-stubs/index/with${indexFile}`)
+        let indexsource = path.join(`${PKG_ROOT}`, `template/page-stubs/index/with${indexFile}`)
         const indexdest = path.join(`${answers.appName}`, `pages/index.vue`)
 
-        await Promise.all([
-            fs.copy(indexsource, indexdest)
-        ])
+        if (answers.modules.includes('trpc')) {
+            let modifiableIndex = fs.readFileSync(indexsource, 'utf8')
+            modifiableIndex = modifiableIndex.replace('// trpc injection', trpcInjection)
+            fs.writeFileSync(indexdest, modifiableIndex)
+        } else {
+            await Promise.all([
+                fs.copy(indexsource, indexdest)
+            ])
+        }
 
-        nuxtModules = nuxtModules.trimEnd()
+        nuxtModules = nuxtModules.trimEnd();
+
         nuxtModules = nuxtModules.split(' ')
         packages = packages.trimEnd().split(' ')
         devPackages = devPackages.trimEnd().split(' ')
 
         let data;
         let newValue;
-
-        if (nuxtModules.includes('trpc-nuxt')) {
+        if (nuxtModules.includes('trpc-nuxt') && answers['trpc-ver'] === 'v9') {
             data = fs.readFileSync(`${answers.appName}/nuxt.config.ts`, 'utf-8');
-            newValue = data.replace('// trpc stub', `trpc: {\n        baseURL: 'http://localhost:3000', // defaults to http://localhost:3000\n        endpoint: '/trpc', // defaults to /trpc\n    },`)
-            await fs.writeFileSync(`${answers.appName}/nuxt.config.ts`, newValue, 'utf-8')
+            newValue = data.replace('// trpc stub', `trpc: {
+  baseURL: '', // Set empty string (default) to make requests by relative address
+  endpoint: '/trpc', // defaults to /trpc
+  installPlugin: true, // defaults to true. Add @trpc/client plugin and composables
+},`)
+            fs.writeFileSync(`${answers.appName}/nuxt.config.ts`, newValue, 'utf-8')
         }
+
 
         let nuxtmods = "";
-        for (let i = 0; i < nuxtModules.length; i++) {
-            const moduleName = nuxtModules[i]
-            nuxtmods += ("      '" + moduleName + "',\n")
+        if (nuxtModules.length > 0) {
+            for (let i = 0; i < nuxtModules.length; i++) {
+                const moduleName = nuxtModules[i]
+                if (moduleName) nuxtmods += ("      '" + moduleName + "',\n")
+            }
+            data = fs.readFileSync(`${answers.appName}/nuxt.config.ts`, 'utf-8');
+            newValue = await data.replace('// module stub', `modules: [\n${nuxtmods}    ],`)
         }
-        data = fs.readFileSync(`${answers.appName}/nuxt.config.ts`, 'utf-8');
-        newValue = await data.replace('// module stub', `modules: [\n${nuxtmods}    ],`)
         const jsonlocation = path.join(answers.appName, 'package.json')
 
-        if (buildOptions) {
-            newValue = newValue.replace('// build stub', `build: {
-                ${buildOptions}
-            },`)
+        if (postCssOptions) {
+            newValue = newValue.replace('// postcss stub', `
+                ${postCssOptions}
+            `)
         }
 
         console.log(chalk.bold('configuring project, please wait...\n'))
@@ -175,9 +226,12 @@ const main = async () => {
             if (!packageName) return;
             const pkgJson = await fs.readJSONSync(jsonlocation)
             const pkgName = packageName;
-            const { stdout: latestVersion } = await execa(`npm show ${packageName} version`);
+            let { stdout: latestVersion } = await execa(`npm show ${packageName} version`);
             if (!latestVersion) {
                 console.warn("WARN: Failed to resolve latest version of package:", packageName);
+            }
+            if (packageName === 'trpc-nuxt' && answers['trpc-ver'] === 'v9') {
+                latestVersion = '0.3'
             }
             pkgJson.dependencies[pkgName] = `^${latestVersion.split('\n')[0]}`;
 

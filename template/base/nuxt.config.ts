@@ -13,7 +13,7 @@ export default {
         '@/assets/css/main.css'
     ],
 
-    // build stub
+    // postcss stub
 
     // module stub
 

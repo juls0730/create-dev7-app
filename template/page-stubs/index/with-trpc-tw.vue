@@ -40,9 +40,7 @@
     <div
       class="pt-6 text-2xl text-blue-500 flex justify-center items-center w-full"
     >
-      <div v-if="pending">Loading...</div>
-      <div v-else-if="error?.data?.code">Error: {{ error.data.code }}</div>
-      <div v-else-if="data">
+      <div v-if="data">
         {{ data.text }}
       </div>
     </div>
@@ -50,12 +48,5 @@
 </template>
 
 <script setup lang="ts">
-const client = useClient();
-
-const {
-  data: data,
-  pending,
-  error,
-  refresh,
-} = await useAsyncQuery(["example.hello"]);
+// trpc injection
 </script>
