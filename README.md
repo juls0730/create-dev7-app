@@ -43,3 +43,6 @@ We love contributors! feel free to contribute to this project.
 <br/>
 
 Loads of stuff here is outright stolen from the <a href="https://github.com/t3-oss/create-t3-app">T3 Stack</a>, I just wanted to give massive props to the guys working on the T3 Stack, without them I wouldnt have the pages for the componenets and I probably wouldnt even have the name Dev7 without them and you'll even notice this readme is basically theirs but less cool, so go and give them a star or something!
+
+## Archived Projects
+Note: This project is being archived. While the Dev7 Stack served its purpose, I believe there are better options available now that provide improved features, performance, and community support. If you're looking for server-side routing capabilities, I recommend exploring the built-in [server routes](https://nuxt.com/docs/guide/directory-structure/server) feature introduced in Nuxt.js V3. It offers a more streamlined and efficient approach. Thank you for your support and understanding!
